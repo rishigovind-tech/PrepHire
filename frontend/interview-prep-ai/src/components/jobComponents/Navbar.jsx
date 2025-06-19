@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useContext } from "react";
 import { assets } from "../../assets/assets";
 import { useClerk, UserButton, useUser } from "@clerk/clerk-react";
 import { Link, useNavigate } from "react-router-dom";
+import { AppContext } from "../../context/jobContext/AppContext";
 
 const Navbar = () => {
   const { openSignIn } = useClerk();
   const { user } = useUser();
 
   const navigate=useNavigate()
+
+  const {setShowRecruiterLogin}=useContext(AppContext)
 
   return (
     <div className=" shadow py-4">
@@ -24,12 +27,13 @@ const Navbar = () => {
           </div>
         ) : (
           <div className=" flex gap-4 max-sm:text-xs">
-            <button className=" bg-[#FA9531] text-sm font-semibold text-white px-7 py-2.5 rounded-full hover:bg-black hover:text-white border border-white transition-colors cursor-pointer">
+            <button onClick={e =>setShowRecruiterLogin(true)} className=" text-orange-500 text-sm font-semibold  py-2.5 rounded-full hover:text-orange-900 transition-colors cursor-pointer">
               Recruiter Login
             </button>
+            <p className=" flex items-center">|</p>
             <button
               onClick={(e) => openSignIn()}
-              className="bg-[#FA9531] text-sm font-semibold text-white px-7 py-2.5 rounded-full hover:bg-black hover:text-white border border-white transition-colors cursor-pointer"
+              className=" text-orange-500 text-sm font-semibold  py-2.5 rounded-full hover:text-orange-900 transition-colors cursor-pointer"
             >
               Job Seeker Login
             </button>
