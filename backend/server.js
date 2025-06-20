@@ -8,6 +8,7 @@ const sessionRoutes=require("./routes/sessionRoute")
 const questionRoutes=require("./routes/questionRoute");
 const { protect } = require("./middlewares/authMiddleware");
 const { generateInterviewQuestion, generateConceptExplaination } = require("./controllers/aiController");
+const { clerkWebhooks } = require("./controllers/webhooksjob");
 
 
 const app = express();
@@ -30,6 +31,17 @@ app.use("/api/questions", questionRoutes);
 
 app.use("/api/ai/generate-questions", protect, generateInterviewQuestion);
 app.use("/api/ai/generate-explaination", protect, generateConceptExplaination);
+
+
+// -------------JOB---------------------------
+
+app.post('/webhooks',clerkWebhooks)
+
+
+
+
+
+// -------------------------------------------
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
