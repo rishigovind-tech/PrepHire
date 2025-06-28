@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const userjobSchema = new mongoose.Schema({
   _id: { type: String, required: true },
@@ -11,5 +11,4 @@ const userjobSchema = new mongoose.Schema({
 
 const UserJob=mongoose.model('UserJob',userjobSchema)
 
-
-export default UserJob;
+module.exports=UserJob;

@@ -1,10 +1,13 @@
-import { Webhook } from "svix";
+const { Webhook } = require("svix");
 
-import UserJob from "../models/UserJob";
+
+
+const UserJob = require("../models/UserJob");
+
 
 // API Controller Function to Manage clerk user with database
 
-export const clerkWebhooks = async (req, res) => {
+ const clerkWebhooks = async (req, res) => {
   try {
     // create a svix instance with cleark webhook secret
 
@@ -65,3 +68,5 @@ export const clerkWebhooks = async (req, res) => {
     res.json({success:false,message:'Webhooks Error'})
   }
 };
+
+module.exports = { clerkWebhooks };

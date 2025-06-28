@@ -16,16 +16,20 @@ import AddJob from "./pages/job/AddJob";
 import ManageJobs from "./pages/job/ManageJobs";
 import ViewApplication from "./pages/job/ViewApplication";
 import Dashboard from "./pages/Home/Dashboard";
-import 'quill/dist/quill.snow.css'
+import "quill/dist/quill.snow.css";
+import ProtectJobRoutes from "./components/protectRoute/ProtectJobRoutes";
+import Hrwelcome from "./components/jobComponents/Hrwelcome";
 
 const App = () => {
-  const { showRecruiterLogin } = useContext(AppContext);
+  const { showRecruiterLogin, companyToken } = useContext(AppContext);
 
   return (
     <UserProvider>
-      <div>
-        {showRecruiterLogin && <RecruiterLogin />}
-        <Router>
+      {" "}
+      <Router>
+        <div>
+          {showRecruiterLogin && <RecruiterLogin />}
+
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -36,24 +40,35 @@ const App = () => {
             <Route path="/jobhome" element={<Home />} />
             <Route path="/apply-job/:id" element={<Applyjob />} />
             <Route path="/applications" element={<Application />} />
-            <Route path="/jobhome/dashboard" element={<DashboardHR />}>
-              <Route path="add-job" element={<AddJob />} />
-              <Route path="manage-jobs" element={<ManageJobs />} />
-              <Route path="view-applications" element={<ViewApplication />} />
-
+            <Route
+              path="/jobhome/dashboard"
+              element={
+                <ProtectJobRoutes>
+                  <DashboardHR />
+                </ProtectJobRoutes>
+              }
+            >
+              {/* {companyToken ? ( */}
+              <>
+                <Route path="hr-welcome" element={<Hrwelcome />} />
+                <Route path="add-job" element={<AddJob />} />
+                <Route path="manage-jobs" element={<ManageJobs />} />
+                <Route path="view-applications" element={<ViewApplication />} />
+              </>
+              {/* ) : null}  */}
             </Route>
           </Routes>
-        </Router>
 
-        <Toaster
-          toastOptions={{
-            className: "",
-            style: {
-              fontSize: "13px",
-            },
-          }}
-        />
-      </div>
+          <Toaster
+            toastOptions={{
+              className: "",
+              style: {
+                fontSize: "13px",
+              },
+            }}
+          />
+        </div>
+      </Router>
     </UserProvider>
   );
 };

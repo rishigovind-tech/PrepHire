@@ -1,12 +1,52 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Navbar from "../../components/jobComponents/Navbar";
 import { assets, jobsApplied } from "../../assets/assets";
 import moment from "moment";
 import Footer from "../Footer";
+import { AppContext } from "../../context/jobContext/AppContext";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const Application = () => {
+  const { user } = useUser();
+  const { getToken } = useAuth();
+
   const [isEdit, setIsEdit] = useState(false);
   const [resume, setResume] = useState(null);
+
+  const { backendUrl, userData, userApplication, fetchUserData } =
+    useContext(AppContext);
+
+  const updateResume = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("resume", resume);
+
+      const token = await getToken();
+
+      const { data } = await axios.post(
+        backendUrl + 'api/users/update-resume',
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log(data);
+
+      if (data.success) {
+        toast.success(data.message);
+        await fetchUserData();
+      } else {
+        toast.error(data.message);
+        
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+
+    setIsEdit(false);
+    setResume(null);
+  };
 
   return (
     <>
@@ -14,11 +54,11 @@ const Application = () => {
       <div className="container px-4 min-h-screen 2xl:px-20 mx-auto my-10">
         <h2 className="text-xl font-semibold">Your Resume</h2>
         <div className=" flex gap-2 mb-6 mt-3">
-          {isEdit ? (
+          {isEdit || (userData && userData.resume === "") ? (
             <>
               <label className="flex items-center" htmlFor="resumeUpload">
                 <p className="bg-orange-100 text-orange-600 px-4 py-2 rounded-lg mr-2">
-                  Select Resume
+                  {resume ? resume.name : "Select Resume"}
                 </p>
                 <input
                   id="resumeUpload"
@@ -30,7 +70,7 @@ const Application = () => {
                 <img src={assets.profile_upload_icon} alt="" />
               </label>
               <button
-                onClick={(e) => setIsEdit(false)}
+                onClick={updateResume}
                 className=" bg-green-100 border border-green-400 rounded-lg px-4 py-2"
               >
                 Save
@@ -92,7 +132,17 @@ const Application = () => {
                     {moment(job.date).format("ll")}
                   </td>
                   <td className=" py-2 px-4 border-b border-gray-300 ">
-                    <span className={`${job.status === 'Accepted' ? 'text-green-500':job.status === 'Rejected' ? 'text-red-500':'text-amber-500'}`}>{job.status}</span>
+                    <span
+                      className={`${
+                        job.status === "Accepted"
+                          ? "text-green-500"
+                          : job.status === "Rejected"
+                          ? "text-red-500"
+                          : "text-amber-500"
+                      }`}
+                    >
+                      {job.status}
+                    </span>
                   </td>
                 </tr>
               ) : null
@@ -100,7 +150,7 @@ const Application = () => {
           </tbody>
         </table>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 };

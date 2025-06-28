@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AppContext } from "../../context/jobContext/AppContext";
 import Loading from "../../components/jobComponents/Loading";
 import Navbar from "../../components/jobComponents/Navbar";
@@ -8,27 +8,68 @@ import kconvert from "k-convert";
 import moment from "moment";
 import JobCard from "../../components/Cards/Job/JobCard";
 import Footer from "../Footer";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 const Applyjob = () => {
   const { id } = useParams();
 
+  const { getToken } = useAuth();
+
+  const navigate = useNavigate();
+
   const [jobData, setJobData] = useState(null);
 
-  const { jobs } = useContext(AppContext);
+  const { jobs, backendUrl, userData, userApplications } =
+    useContext(AppContext);
 
   const fetchJob = async () => {
-    const data = jobs.filter((job) => job._id === id);
-    if (data.length !== 0) {
-      setJobData(data[0]);
-      console.log(data[0]);
+    try {
+      const { data } = await axios.get(backendUrl + `api/jobs/${id}`);
+
+      if (data.success) {
+        setJobData(data.job);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const applyHandler = async () => {
+    try {
+      if (!userData) {
+        return toast.error("Login to apply for jobs");
+      }
+
+      if (!userData.resume) {
+        navigate("/applications");
+        return toast.error("Upload resume to apply");
+      }
+
+      const token = await getToken();
+
+      const { data } = await axios.post(
+        backendUrl + "api/users/apply",
+        { jobId: jobData._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
     }
   };
 
   useEffect(() => {
-    if (jobs.length > 0) {
-      fetchJob();
-    }
-  }, [id, jobs]);
+    fetchJob();
+  }, [id]);
 
   return jobData ? (
     <>
@@ -69,7 +110,10 @@ const Applyjob = () => {
             </div>
 
             <div className=" flex flex-col justify-center text-end text-sm max-md:mx-auto max-md:text-center">
-              <button className="bg-orange-400  text-white px-4 py-2 rounded-2xl hover:bg-yellow-100 hover:text-black border border-yellow-50 hover:border-yellow-300 transition-colors cursor-pointer">
+              <button
+                onClick={applyHandler}
+                className="bg-orange-400  text-white px-4 py-2 rounded-2xl hover:bg-yellow-100 hover:text-black border border-yellow-50 hover:border-yellow-300 transition-colors cursor-pointer"
+              >
                 Apply Now
               </button>
               <p className=" mt-1 text-gray-600">
@@ -85,7 +129,10 @@ const Applyjob = () => {
                 className="rich-text"
                 dangerouslySetInnerHTML={{ __html: jobData.description }}
               ></div>
-              <button className="mt-10 bg-orange-400  text-white px-4 py-2 rounded-2xl hover:bg-yellow-100 hover:text-black border border-yellow-50 hover:border-yellow-300 transition-colors cursor-pointer">
+              <button
+                onClick={applyHandler}
+                className="mt-10 bg-orange-400  text-white px-4 py-2 rounded-2xl hover:bg-yellow-100 hover:text-black border border-yellow-50 hover:border-yellow-300 transition-colors cursor-pointer"
+              >
                 Apply Now
               </button>
             </div>
@@ -93,8 +140,20 @@ const Applyjob = () => {
             {/* Right Section */}
 
             <div className="w-full lg:w-1/3 mt-8 lg:mt-0 lg:ml-8 space-y-5">
-              <h2 className=" font-semibold">More jobs from {jobData.companyId.name}</h2>
-              {jobs.filter(job =>job._id !== jobData._id && job.companyId._id === jobData.companyId._id).filter(job =>true).slice(0,4).map((job,index)=><JobCard key={index} job={job}/>)}
+              <h2 className=" font-semibold">
+                More jobs from {jobData.companyId.name}
+              </h2>
+              {jobs
+                .filter(
+                  (job) =>
+                    job._id !== jobData._id &&
+                    job.companyId._id === jobData.companyId._id
+                )
+                .filter((job) => true)
+                .slice(0, 4)
+                .map((job, index) => (
+                  <JobCard key={index} job={job} />
+                ))}
             </div>
           </div>
         </div>

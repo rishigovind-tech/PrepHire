@@ -6,6 +6,7 @@ import { AppContextProvider } from "./context/jobContext/AppContext.jsx";
 import { ClerkProvider } from "@clerk/clerk-react";
 
 
+
 // Import your Publishable Key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
